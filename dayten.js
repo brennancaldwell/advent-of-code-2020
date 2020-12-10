@@ -7,8 +7,18 @@ fs.readFile('./inputsDayTen.txt', 'utf8', (err, data) => {
   }
 
   const input = data.split('\n').map(num => parseInt(num, 10));
+  const adapters = new MinHeap;
+  input.forEach(value => adapters.push(value));
 
-  console.log(input);
+  const [ ones, threes, range ] = measureJoltageDiffs(adapters);
+
+  console.log(`Part One: ${ones * threes}, range: ${range}, ones: ${ones}, threes: ${threes}`);
+
+  let sorted = input.slice().sort((a, b) => a - b);
+  sorted.unshift(0);
+  sorted.push(range)
+
+  console.log(comboCount(sorted));
 })
 
 class MinHeap {
@@ -67,4 +77,38 @@ class MinHeap {
     return this.store.length - 1;
   }
 
+}
+
+function measureJoltageDiffs(heap) {
+  let prev = 0, oneJolt = 0, threeJolt = 0;
+
+  while (heap.size()) {
+    let current = heap.pop();
+    if (Math.abs(current - prev) === 1) oneJolt++;
+    if (Math.abs(current - prev) === 3) threeJolt++;
+    prev = current;
+  }
+
+  threeJolt++;
+  prev += 3;
+
+  return [ oneJolt, threeJolt, prev];
+}
+
+
+function comboCount(input, memo = {}) {
+  const key = input.join(',');
+  if (key in memo) return memo[key];
+
+  let result = 1;
+  for (let i = 1; i < input.length - 1; i++) {
+    if (input[i + 1] - input[i - 1] <= 3) {
+      const secondArray = [input[i - 1]].concat(input.slice(i + 1));
+      result += comboCount(secondArray, memo);
+    }
+  }
+
+  memo[key] = result;
+
+  return result;
 }
