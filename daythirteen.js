@@ -1,12 +1,13 @@
 const fs = require('fs');
 
 const inputs = fs.readFileSync('./inputsDayThirteen.txt', 'utf-8').split('\n');
-const timeStamp = parseInt(inputs[0], 10);
-const busIDs = inputs[1].split(',').filter(x => x !== 'x').map(num => parseInt(num, 10));
 
-console.log(partOne(timeStamp, busIDs));
+console.log(partOne(inputs));
+console.log(partTwo(inputs))
 
-function partOne(timeStamp, busIDs) {
+function partOne(inputs) {
+  const timeStamp = parseInt(inputs[0], 10);
+  const busIDs = inputs[1].split(',').filter(x => x !== 'x').map(num => parseInt(num, 10));
   let waitStart = timeStamp, current = waitStart;
 
   while (true) {
@@ -17,4 +18,42 @@ function partOne(timeStamp, busIDs) {
     }
     current++;
   }
+}
+
+function partTwo(inputs) {
+  const buses = inputs[1].split(',').map(val => val === 'x' ? 'x' : parseInt(val, 10));
+
+  const N = buses.reduce((acc, val) => {
+    if (val === 'x') {
+      return acc;
+    }
+    if (acc === null) {
+      return val;
+    } else {
+      return acc * val;
+    }
+  }, null)
+
+  const sum = buses.reduce((acc, curr, i) => {
+    if (curr === 'x') {
+      return acc;
+    }
+    const a = absoluteModulo(curr - i, curr);
+    const nU = N / curr;
+    const inverse = moduloInverse(nU, curr);
+    return acc + BigInt(BigInt(a) * BigInt(nU) * BigInt(inverse));
+  }, 0n)
+  return sum % BigInt(N);
+}
+
+function absoluteModulo(a, b) {
+  return ((a % b) + b) % b;
+}
+
+function moduloInverse(a, mod) {
+  const b = a % mod;
+  for (let i = 0; i < mod; i++) {
+    if ((b * i) % mod === 1) return i;
+  }
+  return 1;
 }
