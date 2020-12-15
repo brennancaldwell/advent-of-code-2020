@@ -57,3 +57,8 @@ function moduloInverse(a, mod) {
   }
   return 1;
 }
+
+/*
+Chinese Remainder Theorem
+https://en.wikipedia.org/wiki/Chinese_remainder_theorem
+*/
