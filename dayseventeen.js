@@ -51,7 +51,6 @@ function partOne(input, totalCycles) {
     }
   }
 
-  console.log(current[0])
   while (cycle <= totalCycles) {
     let newCurrent = {}, lowestZ = Infinity, highestZ = -Infinity;
     const currSize = current[0].length;
@@ -93,3 +92,166 @@ function partOne(input, totalCycles) {
 }
 
 console.log(partOne(input, 6));
+
+class Grid4D {
+  gridX = new Map();
+
+  get(x, y, z, w) {
+    let gridY = this.gridX.get(x);
+    if (!gridY) {
+      gridY = new Map();
+      this.gridX.set(x, gridY);
+
+      let gridZ = new Map();
+      gridY.set(y, gridZ);
+
+      let gridW = new Map();
+      gridZ.set(z, gridW);
+
+      return false;
+    }
+
+    let gridZ = gridY.get(y);
+
+    if (!gridZ) {
+      gridZ = new Map();
+      gridY.set(y, gridZ);
+
+      let gridW = new Map();
+      gridZ.set(z, gridW);
+
+      return false;
+    }
+
+    let gridW = gridZ.get(z);
+
+    if (!gridW) {
+      gridW = new Map();
+      gridZ.set(z, gridW);
+
+      return false;
+    }
+
+    return gridW.get(w) || false;
+  }
+
+  set(x, y, z, w, val) {
+    let gridY = this.gridX.get(x);
+
+    if (!gridY) {
+      gridY = new Map();
+      this.gridX.set(x, gridY);
+
+      let gridZ = new Map();
+      gridY.set(y, gridZ);
+
+      let gridW = new Map();
+      gridZ.set(z, gridW);
+      gridW.set(w, val);
+      return;
+    }
+
+    let gridZ = gridY.get(y);
+    if (!gridZ) {
+       gridZ = new Map();
+       gridY.set(y, gridZ);
+
+       let gridW = new Map();
+       gridZ.set(z, gridW);
+       gridW.set(w, val);
+    } else {
+      let gridW = gridZ.get(z);
+
+      if (!gridW) {
+        gridW = new Map();
+        gridZ.set(z, gridW);
+        gridW.set(w, val);
+      } else {
+        gridW.set(w, val);
+      }
+    }
+  }
+
+  iterate(iterator) {
+    this.gridX.forEach((gridY, x, mapX) => {
+      gridY.forEach((gridZ, y, mapY) => {
+        gridZ.forEach((gridW, z, mapZ) => {
+          gridW.forEach((value, w, mapW) => {
+            iterator(x, y, z, w, value);
+          })
+        })
+      })
+    });
+  }
+}
+
+function initialGrid(input) {
+  const grid = new Grid4D();
+  for (let x = 0; x < input.length; x++) {
+    for (let y = 0; y < input[x].length; y++) {
+      const isActive = input[x][y] === '#';
+      grid.set(x, y, 0, 0, isActive);
+    }
+  }
+
+  return grid;
+}
+
+function countNeighbors(ax, ay, az, aw, grid) {
+  let neighbors = 0;
+
+  for (let x = -1; x <= 1; x++) {
+    for (let y = -1; y <= 1; y++) {
+      for (let z = -1; z <= 1; z++) {
+        for (let w = -1; w <= 1; w++) {
+          if (x === 0 && y === 0 && z === 0 && w === 0) {
+            continue;
+          }
+          if (grid.get(ax + x, ay + y, az + z, aw + w)) {
+            neighbors++;
+
+            if (neighbors >= 4) {
+              return neighbors;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  return neighbors;
+}
+
+function partTwo(input, totalCycles) {
+  let current = initialGrid(input), step = 1;
+
+  while (step <= totalCycles) {
+    let newGrid = new Grid4D();
+    for (let x = -step; x < input.length + step; x++) {
+      for (let y = -step; y < input.length + step; y++) {
+        for (let z = -step; z <= step; z++) {
+          for (let w = -step; w <= step; w++) {
+            let val = current.get(x, y, z, w);
+            if (val) {
+              let neighb = countNeighbors(x, y, z, w, current);
+              val = neighb === 2 || neighb === 3;
+            } else {
+              let neighb = countNeighbors(x, y, z, w, current)
+              val = neighb === 3;
+            }
+
+            newGrid.set(x, y, z, w, val);
+          }
+        }
+      }
+    }
+    current = newGrid;
+    step++;
+  }
+
+  let active = 0;
+  current.iterate((x, y, z, w, val) => active += (val ? 1 : 0));
+  return active;
+}
+
+console.log(partTwo(input, 6));
