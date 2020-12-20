@@ -44,3 +44,37 @@ function partOne(input) {
 }
 
 console.log(partOne(input));
+
+function advancedCalc(expression) {
+  if (!isNaN(Number(expression))) { Number(expression) }
+
+  while (expression.match(/\(/)){
+    expression = expression.replace(/\([^()]+\)/, match =>
+      advancedCalc(match.slice(1, match.length-1))
+    )
+  }
+
+  while (expression.match(/\+/)){
+    expression = expression.replace(/(\d+) \+ (\d+)/, (match, a, b) =>
+      parseInt(a) + parseInt(b)
+    )
+  }
+
+  while (expression.match(/\*/)) {
+    expression = expression.replace(/(\d+) \* (\d+)/, (match, a, b) =>
+      parseInt(a) * parseInt(b)
+    )
+  }
+  return Number(expression)
+}
+
+function partTwo(input) {
+  let total = 0;
+  input.forEach(line => {
+    total += advancedCalc(line);
+  })
+
+  return total;
+}
+
+console.log(partTwo(input));
