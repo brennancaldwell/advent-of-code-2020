@@ -1,25 +1,44 @@
 const input = [0, 1, 5, 10, 3, 12, 19];
 
 function partOne(input, target) {
-  let arr = input.slice();
-  const seenNumbers = {};
+  const seenNumbers = {}, arr = input.slice();
+
   for (let i = 0; i < input.length; i++) {
     seenNumbers[input[i]] = i;
   }
 
-  arr.push(0);
+  arr.push(0)
+
   while (arr.length < target) {
-    const prev = arr[arr.length - 1];
+    const n = arr.length - 1, prev = arr[n];
     let spoken = 0;
     if (prev in seenNumbers) {
-      spoken = (arr.length - 1) - seenNumbers[prev];
+      spoken = n - seenNumbers[prev];
     }
-    seenNumbers[prev] = arr.length - 1;
+    seenNumbers[prev] = n;
     arr.push(spoken);
   }
 
-  console.log(arr.length);
   return arr[arr.length - 1];
 }
 
+function partTwo(input, target) {
+  const mem = new Map();
+  input.forEach((num, i) => mem.set(num, i + 1));
+  let curr = 0;
+  for (let i = input.length + 1; i < target; i++) {
+    if (mem.has(curr)) {
+      const location = mem.get(curr);
+      mem.set(curr, i);
+      curr = i - location;
+    } else {
+      mem.set(curr, i);
+      curr = 0;
+    }
+  }
+  return curr;
+}
+
 console.log(partOne(input, 2020));
+
+console.log(partTwo(input, 30000000));
